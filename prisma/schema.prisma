@@ -1,0 +1,72 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+
+model User {
+  id                     String   @id @default(uuid())
+  email                  String   @unique
+  username               String   @unique
+  avatarUrl              String?
+  friends                String[]
+  sentFriendRequests     String[]
+  receivedFriendRequests String[]
+  tags                   String[]
+  createdAt              DateTime @default(now())
+
+  dayLogs          DayLog[]
+  streaks          Streak[]
+  sentFeedItems    FriendFeedItem[] @relation("SentFeedItems")
+  receivedFeedItems FriendFeedItem[] @relation("ReceivedFeedItems")
+}
+
+model DayLog {
+  id             String   @id @default(uuid())
+  userId         String
+  date           DateTime
+  highlights     Json
+  dailyScore     Int?
+  sharedToFriends Boolean @default(false)
+  createdAt      DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([userId, date])
+}
+
+model Streak {
+  id            String   @id @default(uuid())
+  userId        String
+  name          String
+  condition     String
+  currentStreak Int      @default(0)
+  bestStreak    Int      @default(0)
+  isDefault     Boolean  @default(false)
+  history       DateTime[]
+  createdAt     DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model FriendFeedItem {
+  id             String   @id @default(uuid())
+  fromUserId     String
+  toUserId       String
+  date           DateTime
+  dayLogSnapshot Json
+  createdAt      DateTime @default(now())
+
+  fromUser User @relation("SentFeedItems", fields: [fromUserId], references: [id])
+  toUser   User @relation("ReceivedFeedItems", fields: [toUserId], references: [id])
+}
