@@ -22,45 +22,63 @@ export default function FriendCard({
   return (
     <div
       onClick={onClick}
-      className="bg-white border border-base-200 rounded-md p-5 cursor-pointer transition-all hover:border-base-300 hover:shadow-sm"
+      className="bg-white border border-base-200 rounded-xl px-6 py-5 cursor-pointer transition-all hover:border-base-300 hover:shadow-sm"
     >
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-accent-light text-accent flex items-center justify-center font-medium text-sm">
+      {/* Header */}
+      <div className="flex items-start justify-between gap-4 mb-5">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-9 h-9 rounded-full bg-accent-light text-accent flex items-center justify-center font-semibold text-sm shrink-0">
             {friendUsername[0]?.toUpperCase()}
           </div>
-          <div>
-            <h3 className="font-semibold text-base-700 text-sm">
+
+          <div className="min-w-0">
+            <h3 className="font-semibold text-base-700 text-sm truncate">
               @{friendUsername}
             </h3>
-            <p className="text-[10px] text-base-400">Shared today</p>
+
+            <p className="text-[11px] text-base-400 mt-0.5">
+              Shared today
+            </p>
           </div>
         </div>
 
         {dailyScore !== null && (
-          <div className="flex items-center gap-1 bg-accent-light/50 border border-accent-light px-2 py-1 rounded text-xs font-semibold text-accent">
-            <Star size={12} className="fill-current" />
-            <span className="text-[11px]">Score</span>
-            <span className="font-bold">{dailyScore}</span>
+          <div className="flex items-center gap-1.5 text-accent shrink-0">
+            <Star size={13} className="fill-current" />
+
+            <span className="text-[12px] font-semibold">
+              {dailyScore}
+            </span>
           </div>
         )}
       </div>
 
-      <ul className="space-y-2 mb-1">
+      {/* Highlights */}
+      <div className="space-y-3">
         {highlights.map((h, idx) => (
-          <li
+          <div
             key={idx}
-            className="text-xs text-base-600 flex items-start gap-2 bg-base-50/50 p-2 rounded border border-base-200/30"
+            className="flex items-start gap-3"
           >
-            <span className="text-base-400 font-medium">{idx + 1}.</span>
-            <span className="flex-1">{h.text}</span>
-          </li>
-        ))}
-      </ul>
+            <span className="text-[11px] text-base-400 font-medium pt-[2px] shrink-0">
+              {String(idx + 1).padStart(2, '0')}
+            </span>
 
-      <div className="mt-4 pt-3 border-t border-base-200 text-center">
-        <span className="text-[10px] font-medium text-accent hover:text-accent-hover transition-colors uppercase tracking-wider">
-          Tap to view streaks
+            <p className="text-sm leading-relaxed text-base-600">
+              {h.text}
+            </p>
+          </div>
+        ))}
+      </div>
+
+      {/* Footer */}
+      <div className="mt-5 pt-4 border-t border-base-100 flex items-center justify-between">
+        <span className="text-[10px] tracking-[0.18em] text-base-400 font-medium">
+          What Your friends did today
+        </span>
+
+        <span className="text-[11px] font-medium text-accent">
+          View streaks
         </span>
       </div>
     </div>

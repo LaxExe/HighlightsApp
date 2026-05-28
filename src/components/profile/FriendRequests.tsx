@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { Plus, UserCheck, UserX, Users } from 'lucide-react'
+import { supabase } from '@/lib/supabase'
+import { UserPlus, X } from 'lucide-react'
 
 interface Friend {
   id: string
@@ -19,179 +20,232 @@ export default function FriendRequests({
   receivedRequests,
   onActionSuccess,
 }: FriendRequestsProps) {
-  const [usernameInput, setUsernameInput] = useState('')
+  const [username, setUsername] = useState('')
   const [loading, setLoading] = useState(false)
-  const [message, setMessage] = useState<{ text: string; isError: boolean } | null>(null)
+  const [message, setMessage] = useState<string | null>(null)
 
-  async function handleSendRequest(e: React.FormEvent) {
-    e.preventDefault()
-    if (!usernameInput.trim()) return
+  async function sendRequest() {
+    if (!username.trim()) return
 
     setLoading(true)
     setMessage(null)
 
     try {
-      const sessionStr = localStorage.getItem('sb-ovdhumnqyhthbwdnkfui-auth-token')
-      let token = ''
-      if (sessionStr) {
-        const parsed = JSON.parse(sessionStr)
-        token = parsed.access_token ?? ''
-      }
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
+
+      if (!session) return
 
       const res = await fetch('/api/friends/request', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${session.access_token}`,
         },
-        body: JSON.stringify({ username: usernameInput.trim() }),
+        body: JSON.stringify({
+          username: username.trim(),
+        }),
       })
 
       const data = await res.json()
+
       if (!res.ok) {
-        throw new Error(data.error ?? 'Failed to send request')
+        throw new Error(data.error || 'Failed to send request')
       }
 
-      setMessage({ text: data.message || 'Friend request sent!', isError: false })
-      setUsernameInput('')
-      onActionSuccess()
-    } catch (err) {
-      setMessage({
-        text: err instanceof Error ? err.message : 'Something went wrong',
-        isError: true,
-      })
+      setUsername('')
+      setMessage('Friend request sent')
+    } catch (error) {
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : 'Something went wrong'
+      )
     } finally {
       setLoading(false)
     }
   }
 
-  async function handleResponse(requestId: string, action: 'accept' | 'decline') {
-    setMessage(null)
-    try {
-      const sessionStr = localStorage.getItem('sb-ovdhumnqyhthbwdnkfui-auth-token')
-      let token = ''
-      if (sessionStr) {
-        const parsed = JSON.parse(sessionStr)
-        token = parsed.access_token ?? ''
-      }
+async function handleAcceptRequest(userId: string) {
+  try {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession()
 
-      const res = await fetch('/api/friends/respond', {
+    if (!session) return
+
+    const res = await fetch('/api/friends/accept', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({ userId }),
+    })
+
+    const data = await res.json()
+
+    console.log('ACCEPT FRIEND RESPONSE:', data)
+
+    if (!res.ok) {
+      throw new Error(data.error || 'Failed to accept request')
+    }
+
+    onActionSuccess()
+  } catch (error) {
+    console.error('ACCEPT FRIEND ERROR:', error)
+  }
+}
+  async function handleRemoveFriend(friendId: string) {
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
+
+      if (!session) return
+
+      const res = await fetch('/api/friends/remove', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${session.access_token}`,
         },
-        body: JSON.stringify({ requestId, action }),
+        body: JSON.stringify({ friendId }),
       })
 
       if (!res.ok) {
-        const data = await res.json()
-        throw new Error(data.error ?? 'Failed to respond to request')
+        throw new Error('Failed to remove friend')
       }
 
       onActionSuccess()
-    } catch (err) {
-      setMessage({
-        text: err instanceof Error ? err.message : 'Something went wrong',
-        isError: true,
-      })
+    } catch (error) {
+      console.error(error)
     }
   }
 
   return (
-    <div className="space-y-6">
-      {/* Add Friend Form */}
-      <div className="bg-white border border-base-200 rounded-md p-6">
-        <h2 className="text-sm font-semibold text-base-700 mb-1">Add Friend</h2>
-        <p className="text-[10px] text-base-400 mb-4">
-          Add friends by entering their username.
+    <div className="bg-white border border-base-200 rounded-xl p-6">
+      {/* HEADER */}
+      <div className="mb-6">
+        <h2 className="text-sm font-semibold text-base-700">
+          Friends
+        </h2>
+
+        <p className="text-xs text-base-400 mt-1">
+          Manage your social connections
         </p>
-
-        <form onSubmit={handleSendRequest} className="flex gap-2">
-          <input
-            type="text"
-            value={usernameInput}
-            onChange={(e) => setUsernameInput(e.target.value)}
-            placeholder="Search username (e.g. alex)..."
-            className="flex-1 border border-base-200 rounded px-3 py-1.5 text-xs text-base-700 placeholder-base-400 outline-none focus:border-base-300 bg-white"
-          />
-          <button
-            type="submit"
-            disabled={loading || !usernameInput.trim()}
-            className="px-3.5 py-1.5 bg-base-700 hover:bg-base-600 disabled:opacity-50 text-base-700 rounded text-xs font-semibold cursor-pointer transition-colors flex items-center gap-1"
-          >
-            <Plus size={12} /> Add
-          </button>
-        </form>
-
-        {message && (
-          <p
-            className={`text-xs mt-2 ${
-              message.isError ? 'text-red-500' : 'text-emerald-600 font-medium'
-            }`}
-          >
-            {message.text}
-          </p>
-        )}
       </div>
 
-      {/* Pending Requests */}
-      {receivedRequests.length > 0 && (
-        <div className="bg-white border border-base-200 rounded-md p-6">
-          <h2 className="text-sm font-semibold text-base-700 mb-3 flex items-center gap-2">
-            Friend Requests
-            <span className="inline-flex items-center justify-center px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-accent-light text-accent">
-              {receivedRequests.length}
-            </span>
-          </h2>
+      {/* ADD FRIEND */}
+      <div className="flex gap-3 mb-6">
+        <input
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          placeholder="Add by username"
+          className="flex-1 border border-base-200 rounded-xl px-3 py-2 text-sm"
+        />
 
-          <div className="divide-y divide-base-100">
-            {receivedRequests.map((req) => (
-              <div
-                key={req.id}
-                className="flex items-center justify-between py-2.5 first:pt-0 last:pb-0"
-              >
-                <span className="text-xs font-medium text-base-600">@{req.username}</span>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => handleResponse(req.id, 'accept')}
-                    className="p-1 hover:bg-emerald-50 text-emerald-600 hover:text-emerald-700 border border-transparent hover:border-emerald-200 rounded transition-all cursor-pointer flex items-center gap-1 text-[10px] px-1.5"
-                  >
-                    <UserCheck size={11} /> Accept
-                  </button>
-                  <button
-                    onClick={() => handleResponse(req.id, 'decline')}
-                    className="p-1 hover:bg-red-50 text-red-500 hover:text-red-600 border border-transparent hover:border-red-200 rounded transition-all cursor-pointer flex items-center gap-1 text-[10px] px-1.5"
-                  >
-                    <UserX size={11} /> Decline
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
+        <button
+          onClick={sendRequest}
+          disabled={loading}
+          className="px-4 py-2 bg-base-700 hover:bg-base-600 text-base-700 rounded-xl text-sm font-medium transition-colors flex items-center gap-2"
+        >
+          <UserPlus size={15} />
+          Add
+        </button>
+      </div>
+
+      {message && (
+        <div className="mb-6 text-xs text-base-500">
+          {message}
         </div>
       )}
 
-      {/* Friends list */}
-      <div className="bg-white border border-base-200 rounded-md p-6">
-        <h2 className="text-sm font-semibold text-base-700 mb-3 flex items-center gap-2">
-          <Users size={14} className="text-base-400" />
-          Friends ({friends.length})
-        </h2>
+      {/* FRIENDS LIST */}
+      <div className="mb-8">
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-xs font-medium uppercase tracking-wider text-base-400">
+            Current Friends
+          </p>
+
+          <span className="text-xs text-base-400">
+            {friends.length}
+          </span>
+        </div>
 
         {friends.length > 0 ? (
-          <div className="grid grid-cols-2 gap-2 max-h-[160px] overflow-y-auto pr-1">
-            {friends.map((f) => (
+          <div className="divide-y divide-base-100">
+            {friends.map((friend) => (
               <div
-                key={f.id}
-                className="bg-base-50/50 border border-base-200/50 rounded p-2 text-xs font-medium text-base-600 truncate"
+                key={friend.id}
+                className="flex items-center justify-between py-3"
               >
-                @{f.username}
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-accent-light text-accent flex items-center justify-center text-sm font-semibold">
+                    {friend.username[0]?.toUpperCase()}
+                  </div>
+
+                  <span className="text-sm text-base-700 font-medium">
+                    @{friend.username}
+                  </span>
+                </div>
+
+                <button
+                  onClick={() => handleRemoveFriend(friend.id)}
+                  className="p-1 text-base-400 hover:text-red-500 transition-colors"
+                  aria-label="Remove friend"
+                >
+                  <X size={15} />
+                </button>
               </div>
             ))}
           </div>
         ) : (
-          <p className="text-xs text-base-400 italic">No friends added yet.</p>
+          <p className="text-sm text-base-400">
+            No friends yet.
+          </p>
+        )}
+      </div>
+
+      {/* FRIEND REQUESTS */}
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-xs font-medium uppercase tracking-wider text-base-400">
+            Friend Requests
+          </p>
+
+          <span className="text-xs text-base-400">
+            {receivedRequests.length}
+          </span>
+        </div>
+
+        {receivedRequests.length > 0 ? (
+          <div className="space-y-3">
+            {receivedRequests.map((request) => (
+              <div
+                key={request.id}
+                className="flex items-center justify-between border border-base-200 rounded-xl px-4 py-3"
+              >
+                <span className="text-sm text-base-700">
+                  @{request.username}
+                </span>
+
+                <button
+                  onClick={() =>
+                    handleAcceptRequest(request.id)
+                  }
+                  className="text-xs font-medium text-accent hover:text-accent-hover transition-colors"
+                >
+                  Accept
+                </button>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-base-400">
+            No pending requests.
+          </p>
         )}
       </div>
     </div>
