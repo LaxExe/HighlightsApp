@@ -97,6 +97,7 @@ async function handleAcceptRequest(userId: string) {
     console.error('ACCEPT FRIEND ERROR:', error)
   }
 }
+
   async function handleRemoveFriend(friendId: string) {
     try {
       const {

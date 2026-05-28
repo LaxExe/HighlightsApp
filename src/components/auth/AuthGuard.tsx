@@ -16,10 +16,9 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
       const { data: { session } } = await supabase.auth.getSession()
       if (!mounted) return
 
-      if (!session && pathname !== '/auth') {
-        router.replace('/auth')
-      } else if (session && pathname === '/auth') {
-        router.replace('/')
+      // Only redirect authenticated users away from /auth to /log
+      if (session && pathname === '/auth') {
+        router.replace('/log')
       } else {
         setLoading(false)
       }
@@ -29,10 +28,8 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (!mounted) return
-      if (!session && pathname !== '/auth') {
-        router.replace('/auth')
-      } else if (session && pathname === '/auth') {
-        router.replace('/')
+      if (session && pathname === '/auth') {
+        router.replace('/log')
       } else {
         setLoading(false)
       }
@@ -44,7 +41,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     }
   }, [pathname, router])
 
-  if (loading && pathname !== '/auth') {
+  if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-base-50">
         <span className="text-sm text-base-400">Loading…</span>
