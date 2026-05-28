@@ -197,7 +197,7 @@ export default function TagManager({
                   className={`inline-flex items-center gap-1 px-2.5 py-1 rounded text-xs transition-colors cursor-pointer border ${
                     isAdded
                       ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                      : 'bg-white hover:bg-accent-light border-base-250 text-base-600'
+                      : 'bg-white hover:bg-accent-light border-base-200 text-base-600'
                   }`}
                 >
                   {isAdded && <Check size={11} />}
@@ -238,12 +238,12 @@ export default function TagManager({
           value={newTag}
           onChange={(e) => setNewTag(e.target.value)}
           placeholder="New tag (e.g. ece-105, coding)..."
-          className="flex-1 border border-base-200 rounded px-3 py-1.5 text-xs text-base-750 placeholder-base-400 outline-none focus:border-base-350 bg-white"
+          className="flex-1 border border-base-200 rounded px-3 py-1.5 text-xs text-base-700 placeholder-base-400 outline-none focus:border-base-300 bg-white"
         />
         <button
           type="submit"
           disabled={loading || !newTag.trim()}
-          className="px-3 py-1.5 bg-base-750 hover:bg-base-650 disabled:opacity-50 text-base-700 rounded text-xs font-semibold cursor-pointer transition-colors flex items-center gap-1"
+          className="px-3 py-1.5 bg-base-700 hover:bg-base-600 disabled:opacity-50 text-white rounded text-xs font-semibold cursor-pointer transition-colors flex items-center gap-1"
         >
           <Plus size={12} /> Add
         </button>

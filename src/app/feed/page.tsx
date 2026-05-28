@@ -15,6 +15,7 @@ interface Streak {
   bestStreak: number
   isDefault: boolean
   history: string[] | Date[]
+  createdAt: string | Date
 }
 
 interface Friend {

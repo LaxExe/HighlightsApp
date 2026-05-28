@@ -31,7 +31,6 @@ export async function POST(req: NextRequest) {
 
     const today = todayUTC()
 
-    // prevent double logging
     const existing = await prisma.dayLog.findUnique({
       where: { userId_date: { userId, date: today } },
     })
@@ -42,20 +41,14 @@ export async function POST(req: NextRequest) {
 
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      include: {
-        streaks: true,
-      },
+      include: { streaks: true },
     })
 
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    const {
-      dailyScore,
-      taggedHighlights,
-      streakResults,
-    } = await runPipeline(
+    const { dailyScore, taggedHighlights, streakResults } = await runPipeline(
       highlights,
       user.tags,
       user.streaks.map((s) => ({
@@ -77,23 +70,14 @@ export async function POST(req: NextRequest) {
       },
     })
 
-    // ---------------------------
-    // FIXED STREAK UPDATE LOGIC
-    // ---------------------------
     const streaksMet: { id: string; name: string }[] = []
 
     for (const streak of user.streaks) {
-      const result = streakResults.find(
-        (r) => r.streakId === streak.id
-      )
-
+      const result = streakResults.find((r) => r.streakId === streak.id)
       const met = result?.met === true
 
       if (met) {
-        streaksMet.push({
-          id: streak.id,
-          name: streak.name,
-        })
+        streaksMet.push({ id: streak.id, name: streak.name })
       }
 
       const updated = calculateStreakUpdate(streak, met, today)
@@ -108,9 +92,6 @@ export async function POST(req: NextRequest) {
       })
     }
 
-    // ---------------------------
-    // FRIEND FEED (SAFE)
-    // ---------------------------
     const friends: string[] = user.friends ?? []
 
     if (sharedToFriends && friends.length > 0) {
@@ -132,9 +113,6 @@ export async function POST(req: NextRequest) {
       })
     }
 
-    // ---------------------------
-    // EXTRACT TAGS PROPERLY
-    // ---------------------------
     const dayTags = Array.from(
       new Set(
         (taggedHighlights as any[])
@@ -143,11 +121,7 @@ export async function POST(req: NextRequest) {
       )
     )
 
-    return NextResponse.json({
-      ...dayLog,
-      streaksMet,
-      dayTags,
-    })
+    return NextResponse.json({ ...dayLog, streaksMet, dayTags })
   } catch (error) {
     console.error('Error creating day log:', error)
     return NextResponse.json({ error: String(error) }, { status: 500 })
@@ -168,7 +142,37 @@ export async function GET(req: NextRequest) {
       where: { userId_date: { userId, date: today } },
     })
 
-    return NextResponse.json(dayLog)
+    if (!dayLog) {
+      return NextResponse.json({ error: 'No log found' }, { status: 404 })
+    }
+
+    const dayTags = Array.from(
+      new Set(
+        (dayLog.highlights as any[])
+          .map((h) => h?.tag)
+          .filter(Boolean)
+      )
+    )
+
+    const streaks = await prisma.streak.findMany({
+      where: { userId },
+    })
+
+    const todayStr = today.toISOString().split('T')[0]
+
+    const streaksMet = streaks
+      .filter((s) => {
+        const history = s.history as unknown as (string | Date)[]
+        return Array.isArray(history) && history.some((d) => {
+          const str = d instanceof Date
+            ? d.toISOString().split('T')[0]
+            : String(d).split('T')[0]
+          return str === todayStr
+        })
+      })
+      .map((s) => ({ id: s.id, name: s.name }))
+
+    return NextResponse.json({ ...dayLog, streaksMet, dayTags })
   } catch (error) {
     console.error('Error fetching day log:', error)
     return NextResponse.json({ error: String(error) }, { status: 500 })

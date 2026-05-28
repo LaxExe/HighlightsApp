@@ -15,6 +15,7 @@ interface Streak {
   bestStreak: number
   isDefault: boolean
   history: string[] | Date[]
+  createdAt: string | Date
 }
 
 export default function StreaksPage() {
@@ -108,7 +109,7 @@ export default function StreaksPage() {
 
           <button
             onClick={() => setIsModalOpen(true)}
-            className="inline-flex items-center gap-2 rounded-md border border-base-300 bg-base-700 px-4 py-2.5 text-sm font-medium text-base-700 transition-all hover:bg-base-600"
+            className="inline-flex items-center gap-2 rounded-md border border-base-300 bg-base-100 px-4 py-2.5 text-sm font-medium text-base-700 transition-all hover:bg-base-200 cursor-pointer"
           >
             <Plus size={16} />
             New Streak
@@ -127,13 +128,22 @@ export default function StreaksPage() {
             ))}
           </div>
         ) : (
-          <div className="rounded-xl border border-base-200 bg-white p-16 text-center shadow-sm">
-            <p className="mb-2 text-base font-medium text-base-600">
-              No streaks yet
-            </p>
-            <p className="text-sm text-base-400">
-              Create your first streak to start tracking consistency.
-            </p>
+          <div className="rounded-xl border border-base-200 bg-white p-16 text-center shadow-sm flex flex-col items-center gap-4 animate-in fade-in duration-200">
+            <div>
+              <p className="mb-2 text-base font-medium text-base-600">
+                No streaks yet
+              </p>
+              <p className="text-sm text-base-400">
+                Create your first streak to start tracking consistency.
+              </p>
+            </div>
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="inline-flex items-center gap-2 rounded-md border border-base-300 bg-base-100 px-4 py-2 text-sm font-medium text-base-700 transition-all hover:bg-base-200 cursor-pointer"
+            >
+              <Plus size={16} />
+              Create First Streak
+            </button>
           </div>
         )}
       </div>

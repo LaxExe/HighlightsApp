@@ -86,7 +86,7 @@ export default function NewStreakModal({
             <label className="text-xs text-base-500 font-medium">Streak Name</label>
             <input
               type="text"
-              className="border border-base-200 rounded-md px-3 py-2 text-sm text-base-750 outline-none focus:border-base-400 transition-colors bg-white"
+              className="border border-base-200 rounded-md px-3 py-2 text-sm text-base-700 outline-none focus:border-base-400 transition-colors bg-white"
               placeholder="No Junk Food, 1 Hour Coding, Gym Day"
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -99,7 +99,7 @@ export default function NewStreakModal({
               Natural Language Condition
             </label>
             <textarea
-              className="border border-base-200 rounded-md px-3 py-2 text-sm text-base-750 outline-none focus:border-base-400 transition-colors min-h-[80px] bg-white resize-none"
+              className="border border-base-200 rounded-md px-3 py-2 text-sm text-base-700 outline-none focus:border-base-400 transition-colors min-h-[80px] bg-white resize-none"
               placeholder="e.g. user did not eat fast food or sweets today"
               value={condition}
               onChange={(e) => setCondition(e.target.value)}
@@ -123,7 +123,7 @@ export default function NewStreakModal({
             <button
               type="submit"
               disabled={loading}
-              className="px-4 py-2 bg-base-700 hover:bg-base-650 text-base-700 rounded-md text-[13px] font-medium transition-all disabled:opacity-50"
+              className="px-4 py-2 bg-base-100 hover:bg-base-200 text-base-700 border border-base-300 rounded-md text-[13px] font-medium transition-all disabled:opacity-50"
             >
               {loading ? 'Creating...' : 'Create Streak'}
             </button>

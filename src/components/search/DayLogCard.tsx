@@ -42,7 +42,7 @@ export default function DayLogCard({
       <ul className="space-y-3">
         {highlights.map((h, idx) => (
           <li key={idx} className="flex flex-col gap-1">
-            <div className="flex items-start gap-2 text-xs text-base-650">
+            <div className="flex items-start gap-2 text-xs text-base-600">
               <span className="text-base-400 font-medium">{idx + 1}.</span>
               <span className="flex-1 leading-relaxed">{h.text}</span>
             </div>

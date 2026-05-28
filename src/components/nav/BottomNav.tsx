@@ -17,7 +17,7 @@ export default function BottomNav() {
   if (pathname === '/auth') return null
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-base-50 border-t border-base-200">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-base-200">
       <div className="flex justify-around items-center h-16">
         {tabs.map(tab => {
           const isActive = pathname === tab.href

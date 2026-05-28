@@ -187,7 +187,7 @@ export default function SearchPage() {
           </div>
         ) : (
           <div className="w-full bg-white border border-base-200 rounded-xl p-12 text-center flex flex-col items-center gap-3">
-            <Search size={32} className="text-base-350" />
+            <Search size={32} className="text-base-300" />
 
             <div>
               <p className="text-sm font-medium text-base-600">

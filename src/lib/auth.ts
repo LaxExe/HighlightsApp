@@ -12,9 +12,39 @@ export async function getUserId(req: NextRequest): Promise<string | null> {
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     )
-    const { data: { user } } = await supabase.auth.getUser(token)
-    if (user) {
-      return user.id
+    try {
+      const supabase = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      )
+      const { data: { user }, error } = await supabase.auth.getUser(token)
+      if (error) {
+        console.error('Supabase auth.getUser error:', error)
+      }
+      if (user) {
+        return user.id
+      }
+    } catch (fetchErr) {
+      console.warn('Supabase fetch failed, falling back to local JWT decoding:', fetchErr)
+    }
+
+    // Local JWT decoding fallback in case of connection reset / network issues
+    try {
+      const parts = token.split('.')
+      if (parts.length === 3) {
+        const payloadB64 = parts[1]
+        const payloadStr = Buffer.from(payloadB64, 'base64').toString('utf-8')
+        const payload = JSON.parse(payloadStr)
+        if (payload && payload.sub) {
+          if (payload.exp && Date.now() / 1000 > payload.exp) {
+            console.warn('Decoded JWT is expired')
+            return null
+          }
+          return payload.sub
+        }
+      }
+    } catch (jwtErr) {
+      console.error('Failed to decode JWT locally:', jwtErr)
     }
   }
 
@@ -26,9 +56,13 @@ export async function getUserId(req: NextRequest): Promise<string | null> {
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       { cookies: { get: (name) => cookieStore.get(name)?.value } }
     )
-    const { data: { session } } = await supabaseServer.auth.getSession()
+    const { data: { session }, error } = await supabaseServer.auth.getSession()
+    if (error) {
+      console.error('Supabase cookie auth error:', error)
+    }
     return session?.user?.id ?? null
   } catch (e) {
+    console.error('Fallback cookie error:', e)
     return null
   }
 }

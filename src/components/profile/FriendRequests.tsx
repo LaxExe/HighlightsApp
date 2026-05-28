@@ -113,12 +113,12 @@ export default function FriendRequests({
             value={usernameInput}
             onChange={(e) => setUsernameInput(e.target.value)}
             placeholder="Search username (e.g. alex)..."
-            className="flex-1 border border-base-200 rounded px-3 py-1.5 text-xs text-base-755 placeholder-base-400 outline-none focus:border-base-350 bg-white"
+            className="flex-1 border border-base-200 rounded px-3 py-1.5 text-xs text-base-700 placeholder-base-400 outline-none focus:border-base-300 bg-white"
           />
           <button
             type="submit"
             disabled={loading || !usernameInput.trim()}
-            className="px-3.5 py-1.5 bg-base-700 hover:bg-base-650 disabled:opacity-50 text-base-700 rounded text-xs font-semibold cursor-pointer transition-colors flex items-center gap-1"
+            className="px-3.5 py-1.5 bg-base-700 hover:bg-base-600 disabled:opacity-50 text-white rounded text-xs font-semibold cursor-pointer transition-colors flex items-center gap-1"
           >
             <Plus size={12} /> Add
           </button>
@@ -151,17 +151,17 @@ export default function FriendRequests({
                 key={req.id}
                 className="flex items-center justify-between py-2.5 first:pt-0 last:pb-0"
               >
-                <span className="text-xs font-medium text-base-650">@{req.username}</span>
+                <span className="text-xs font-medium text-base-600">@{req.username}</span>
                 <div className="flex gap-2">
                   <button
                     onClick={() => handleResponse(req.id, 'accept')}
-                    className="p-1 hover:bg-emerald-50 text-emerald-600 hover:text-emerald-700 border border-transparent hover:border-emerald-250 rounded transition-all cursor-pointer flex items-center gap-1 text-[10px] px-1.5"
+                    className="p-1 hover:bg-emerald-50 text-emerald-600 hover:text-emerald-700 border border-transparent hover:border-emerald-200 rounded transition-all cursor-pointer flex items-center gap-1 text-[10px] px-1.5"
                   >
                     <UserCheck size={11} /> Accept
                   </button>
                   <button
                     onClick={() => handleResponse(req.id, 'decline')}
-                    className="p-1 hover:bg-red-50 text-red-500 hover:text-red-600 border border-transparent hover:border-red-250 rounded transition-all cursor-pointer flex items-center gap-1 text-[10px] px-1.5"
+                    className="p-1 hover:bg-red-50 text-red-500 hover:text-red-600 border border-transparent hover:border-red-200 rounded transition-all cursor-pointer flex items-center gap-1 text-[10px] px-1.5"
                   >
                     <UserX size={11} /> Decline
                   </button>
@@ -175,7 +175,7 @@ export default function FriendRequests({
       {/* Friends list */}
       <div className="bg-white border border-base-200 rounded-md p-6">
         <h2 className="text-sm font-semibold text-base-700 mb-3 flex items-center gap-2">
-          <Users size={14} className="text-base-450" />
+          <Users size={14} className="text-base-400" />
           Friends ({friends.length})
         </h2>
 
@@ -184,7 +184,7 @@ export default function FriendRequests({
             {friends.map((f) => (
               <div
                 key={f.id}
-                className="bg-base-50/50 border border-base-200/50 rounded p-2 text-xs font-medium text-base-650 truncate"
+                className="bg-base-50/50 border border-base-200/50 rounded p-2 text-xs font-medium text-base-600 truncate"
               >
                 @{f.username}
               </div>
