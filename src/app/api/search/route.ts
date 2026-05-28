@@ -20,6 +20,7 @@ export async function GET(req: NextRequest) {
     const q = searchParams.get('q')
     const tag = searchParams.get('tag')
     const cursor = searchParams.get('cursor')
+    const date = searchParams.get('date')
     const limit = parseInt(searchParams.get('limit') || '10', 10)
 
     // 1. Build initial query options
@@ -34,6 +35,11 @@ export async function GET(req: NextRequest) {
       queryOptions.cursor = { id: cursor }
       queryOptions.skip = 1 // Skip the cursor log itself
     }
+
+    if (date) {
+      queryOptions.where.date = new Date(date)
+    }
+
 
     // 2. Fetch logs from database
     let dayLogs = await prisma.dayLog.findMany(queryOptions)

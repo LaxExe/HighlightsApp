@@ -51,32 +51,40 @@ export default function FeedPage() {
   const [selectedFriend, setSelectedFriend] = useState<Friend | null>(null)
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
 
-  async function fetchFeed() {
-    try {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession()
+ async function fetchFeed() {
+  try {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession()
 
-      if (!session) {
-        router.replace('/auth')
-        return
-      }
-
-      const res = await fetch('/api/friends', {
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
-      })
-
-      if (res.ok) {
-        const data = await res.json()
-        setFriends(data.friends || [])
-        setFeedItems(data.feedItems || [])
-      }
-    } finally {
-      setLoading(false)
+    if (!session) {
+      router.replace('/auth')
+      return
     }
+
+    const res = await fetch('/api/friends', {
+      headers: {
+        Authorization: `Bearer ${session.access_token}`,
+      },
+    })
+
+    const data = await res.json()
+
+    console.log('Feed API response:', data)
+
+    if (!res.ok) {
+      console.error('Feed API error:', data)
+      return
+    }
+
+    setFriends(data?.friends || [])
+    setFeedItems(data?.feedItems || [])
+  } catch (error) {
+    console.error('FETCH FEED ERROR:', error)
+  } finally {
+    setLoading(false)
   }
+}
 
   useEffect(() => {
     fetchFeed()

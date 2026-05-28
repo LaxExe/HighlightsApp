@@ -1,148 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
-import { runPipeline } from '@/lib/ai/pipeline'
-import { calculateStreakUpdate } from '@/lib/utils/streaks'
-import { rollShareProbability } from '@/lib/utils/roll'
 import { getUserId } from '@/lib/auth'
 
 const prisma = new PrismaClient()
 
 function todayUTC() {
   const now = new Date()
-  return new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()))
-}
 
-export async function POST(req: NextRequest) {
-  try {
-    const userId = await getUserId(req)
-
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const { highlights } = await req.json()
-
-    if (!Array.isArray(highlights) || highlights.length < 3 || highlights.length > 7) {
-      return NextResponse.json(
-        { error: 'Provide between 3 and 7 highlights' },
-        { status: 400 }
-      )
-    }
-
-    const today = todayUTC()
-
-    const existing = await prisma.dayLog.findUnique({
-      where: { userId_date: { userId, date: today } },
-    })
-
-    if (existing) {
-      return NextResponse.json({ error: 'Already logged today' }, { status: 409 })
-    }
-
-    // ✅ ONLY valid include (no friends relation!)
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      include: {
-        streaks: true,
-      },
-    })
-
-    if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 })
-    }
-
-    // AI pipeline
-    const { dailyScore, taggedHighlights, streakResults } = await runPipeline(
-      highlights,
-      user.tags,
-      user.streaks.map((s) => ({
-        id: s.id,
-        name: s.name,
-        condition: s.condition,
-      }))
+  return new Date(
+    Date.UTC(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate()
     )
-
-    const sharedToFriends = rollShareProbability()
-
-    // Save day log
-    const dayLog = await prisma.dayLog.create({
-      data: {
-        userId,
-        date: today,
-        highlights: taggedHighlights as any,
-        dailyScore,
-        sharedToFriends,
-      },
-    })
-
-    // Update streaks
-    for (const streak of user.streaks) {
-      const result = streakResults.find((r) => r.streakId === streak.id)
-      const met = result?.met ?? false
-
-      const updated = calculateStreakUpdate(streak, met, today)
-
-      await prisma.streak.update({
-        where: { id: streak.id },
-        data: {
-          currentStreak: updated.currentStreak,
-          bestStreak: updated.bestStreak,
-          history: updated.history,
-        },
-      })
-    }
-
-    // SAFE FRIENDS HANDLING (String[] field)
-    const friends: string[] = user.friends || []
-
-    if (sharedToFriends && friends.length > 0) {
-      const untaggedHighlights = highlights.map((text: string) => ({
-        text,
-        tag: null,
-      }))
-
-      await prisma.friendFeedItem.createMany({
-        data: friends.map((friendId) => ({
-          fromUserId: userId,
-          toUserId: friendId,
-          date: today,
-          dayLogSnapshot: {
-            highlights: untaggedHighlights,
-            dailyScore,
-          },
-        })),
-      })
-    }
-
-    // Return streaks that were met (FIX for "not showing streaks")
-    const streaksMet = streakResults
-      .filter((r) => r.met)
-      .map((r) => {
-        const streak = user.streaks.find((s) => s.id === r.streakId)
-        return {
-          id: r.streakId,
-          name: streak?.name ?? 'Unknown',
-        }
-      })
-
-    // Return all tags used in the day (FIX for missing tags issue)
-    const dayTags = [
-      ...new Set(
-        (taggedHighlights as any[])
-          .map((h) => h.tag)
-          .filter(Boolean)
-      ),
-    ]
-
-    return NextResponse.json({
-      ...dayLog,
-      streaksMet,
-      dayTags,
-    })
-  } catch (error) {
-    console.error('LOG API ERROR:', error)
-    return NextResponse.json({ error: String(error) }, { status: 500 })
-  }
+  )
 }
 
 export async function GET(req: NextRequest) {
@@ -150,18 +21,97 @@ export async function GET(req: NextRequest) {
     const userId = await getUserId(req)
 
     if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return NextResponse.json(
+        {
+          friends: [],
+          feedItems: [],
+          error: 'Unauthorized',
+        },
+        { status: 401 }
+      )
     }
 
-    const today = todayUTC()
-
-    const dayLog = await prisma.dayLog.findUnique({
-      where: { userId_date: { userId, date: today } },
+    // Fetch current user
+    const currentUser = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        friends: true,
+      },
     })
 
-    return NextResponse.json(dayLog)
+    if (!currentUser) {
+      return NextResponse.json(
+        {
+          friends: [],
+          feedItems: [],
+          error: 'User not found',
+        },
+        { status: 404 }
+      )
+    }
+
+    // SAFE fallback
+    const friendIds: string[] = currentUser.friends || []
+
+    // Fetch friends + streaks
+    const friends = await prisma.user.findMany({
+      where: {
+        id: {
+          in: friendIds,
+        },
+      },
+      select: {
+        id: true,
+        username: true,
+        avatarUrl: true,
+        streaks: {
+          orderBy: [
+            { isDefault: 'desc' },
+            { createdAt: 'asc' },
+          ],
+        },
+      },
+    })
+
+    // Fetch today's feed items
+    const today = todayUTC()
+
+    const feedItems = await prisma.friendFeedItem.findMany({
+      where: {
+        toUserId: userId,
+        date: today,
+      },
+      include: {
+        fromUser: {
+          select: {
+            id: true,
+            username: true,
+            avatarUrl: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    })
+
+    return NextResponse.json({
+      friends: friends || [],
+      feedItems: feedItems || [],
+    })
   } catch (error) {
-    console.error('GET LOG ERROR:', error)
-    return NextResponse.json({ error: String(error) }, { status: 500 })
+    console.error('Error fetching friends feed:', error)
+
+    return NextResponse.json(
+      {
+        friends: [],
+        feedItems: [],
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Unknown error',
+      },
+      { status: 500 }
+    )
   }
 }

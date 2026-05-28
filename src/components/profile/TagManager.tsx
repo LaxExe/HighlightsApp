@@ -243,7 +243,7 @@ export default function TagManager({
         <button
           type="submit"
           disabled={loading || !newTag.trim()}
-          className="px-3 py-1.5 bg-base-700 hover:bg-base-600 disabled:opacity-50 text-white rounded text-xs font-semibold cursor-pointer transition-colors flex items-center gap-1"
+          className="px-3 py-1.5 bg-base-700 hover:bg-base-600 disabled:opacity-50 text-base-700 rounded text-xs font-semibold cursor-pointer transition-colors flex items-center gap-1"
         >
           <Plus size={12} /> Add
         </button>
