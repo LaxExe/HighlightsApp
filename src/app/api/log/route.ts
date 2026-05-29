@@ -5,7 +5,7 @@ import { calculateStreakUpdate } from '@/lib/utils/streaks'
 import { rollShareProbability } from '@/lib/utils/roll'
 import { getUserId } from '@/lib/auth'
 
-const prisma = new PrismaClient()
+import { prisma } from '@/lib/prisma'
 
 function todayUTC() {
   const now = new Date()

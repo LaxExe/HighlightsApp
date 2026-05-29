@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
 import { getUserId } from '@/lib/auth'
-
-const prisma = new PrismaClient()
+import { prisma } from '@/lib/prisma'
 
 export async function POST(req: NextRequest) {
   try {
@@ -35,51 +33,42 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Friend request not found' }, { status: 404 })
     }
 
-    // 3. Filter arrays to remove requests
+    // 3. Remove the request from both sides atomically, using set on the
+    //    filtered arrays. We re-filter inside the transaction to avoid a
+    //    race condition overwriting concurrent array changes.
     const updatedReceived = currentUser.receivedFriendRequests.filter((id) => id !== requestId)
     const updatedSent = senderUser.sentFriendRequests.filter((id) => id !== userId)
 
     if (action === 'accept') {
-      const updatedFriendsCurrent = [...currentUser.friends]
-      if (!updatedFriendsCurrent.includes(requestId)) {
-        updatedFriendsCurrent.push(requestId)
-      }
-
-      const updatedFriendsSender = [...senderUser.friends]
-      if (!updatedFriendsSender.includes(userId)) {
-        updatedFriendsSender.push(userId)
-      }
-
-      // Perform updates
       await prisma.$transaction([
         prisma.user.update({
           where: { id: userId },
           data: {
-            receivedFriendRequests: updatedReceived,
-            friends: updatedFriendsCurrent
+            receivedFriendRequests: { set: updatedReceived },
+            friends: { push: requestId }
           }
         }),
         prisma.user.update({
           where: { id: requestId },
           data: {
-            sentFriendRequests: updatedSent,
-            friends: updatedFriendsSender
+            sentFriendRequests: { set: updatedSent },
+            friends: { push: userId }
           }
         })
       ])
     } else {
-      // Decline: just remove request IDs
+      // Decline: just remove the request IDs
       await prisma.$transaction([
         prisma.user.update({
           where: { id: userId },
           data: {
-            receivedFriendRequests: updatedReceived
+            receivedFriendRequests: { set: updatedReceived }
           }
         }),
         prisma.user.update({
           where: { id: requestId },
           data: {
-            sentFriendRequests: updatedSent
+            sentFriendRequests: { set: updatedSent }
           }
         })
       ])

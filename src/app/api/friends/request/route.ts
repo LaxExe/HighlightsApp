@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
 import { getUserId } from '@/lib/auth'
-
-const prisma = new PrismaClient()
+import { prisma } from '@/lib/prisma'
 
 export async function POST(req: NextRequest) {
   try {
@@ -59,7 +57,10 @@ export async function POST(req: NextRequest) {
     }
 
     // 4. Update both users
-    await prisma.$transaction([
+    console.log('Updating sender:', userId, '→ push', targetUser.id)
+    console.log('Updating receiver:', targetUser.id, '→ push', userId)
+
+    const [senderResult, receiverResult] = await prisma.$transaction([
       prisma.user.update({
         where: { id: userId },
         data: {
@@ -77,6 +78,9 @@ export async function POST(req: NextRequest) {
         }
       })
     ])
+
+    console.log('Sender sentFriendRequests after:', senderResult.sentFriendRequests)
+    console.log('Receiver receivedFriendRequests after:', receiverResult.receivedFriendRequests)
 
     return NextResponse.json({ success: true, message: `Request sent to @${targetUser.username}` })
   } catch (error) {

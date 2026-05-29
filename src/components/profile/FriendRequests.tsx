@@ -67,36 +67,36 @@ export default function FriendRequests({
     }
   }
 
-async function handleAcceptRequest(userId: string) {
-  try {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession()
+  async function handleAcceptRequest(userId: string) {
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
 
-    if (!session) return
+      if (!session) return
 
-    const res = await fetch('/api/friends/accept', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${session.access_token}`,
-      },
-      body: JSON.stringify({ userId }),
-    })
+      const res = await fetch('/api/friends/respond', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ requestId: userId, action: 'accept' }),
+      })
 
-    const data = await res.json()
+      const data = await res.json()
 
-    console.log('ACCEPT FRIEND RESPONSE:', data)
+      console.log('ACCEPT FRIEND RESPONSE:', data)
 
-    if (!res.ok) {
-      throw new Error(data.error || 'Failed to accept request')
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to accept request')
+      }
+
+      onActionSuccess()
+    } catch (error) {
+      console.error('ACCEPT FRIEND ERROR:', error)
     }
-
-    onActionSuccess()
-  } catch (error) {
-    console.error('ACCEPT FRIEND ERROR:', error)
   }
-}
 
   async function handleRemoveFriend(friendId: string) {
     try {
@@ -233,9 +233,7 @@ async function handleAcceptRequest(userId: string) {
                 </span>
 
                 <button
-                  onClick={() =>
-                    handleAcceptRequest(request.id)
-                  }
+                  onClick={() => handleAcceptRequest(request.id)}
                   className="text-xs font-medium text-accent hover:text-accent-hover transition-colors"
                 >
                   Accept
