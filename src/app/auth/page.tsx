@@ -28,7 +28,6 @@ export default function AuthPage() {
       if (error) {
         setError(error.message)
       } else if (data.session) {
-        // session is confirmed — safe to redirect
         router.push('/')
       }
     } else {
@@ -40,7 +39,6 @@ export default function AuthPage() {
       if (error) {
         setError(error.message)
       } else if (data.user) {
-        // create the user record in your DB regardless
         const res = await fetch('/api/users', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -52,16 +50,17 @@ export default function AuthPage() {
         })
 
         if (!res.ok) {
+          const body = await res.json()
+          console.error('Profile setup error:', body)
+
           setError('Account created but profile setup failed. Please contact support.')
           setLoading(false)
           return
         }
 
         if (data.session) {
-          // email confirmation is OFF — session exists, safe to redirect
           router.push('/')
         } else {
-          // email confirmation is ON — session is null until confirmed
           setConfirmationSent(true)
         }
       }

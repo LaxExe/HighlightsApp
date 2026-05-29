@@ -2,8 +2,6 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useEffect, useState } from 'react'
-import { supabase } from '@/lib/supabase'
 import { PenLine, Users, Flame, Search, User } from 'lucide-react'
 
 const tabs = [
@@ -14,34 +12,18 @@ const tabs = [
   { href: '/profile', label: 'Profile', icon: User },
 ]
 
-export default function BottomNav() {
+export default function SideNav() {
   const pathname = usePathname()
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
-
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setIsLoggedIn(!!session)
-    })
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      setIsLoggedIn(!!session)
-    })
-
-    return () => subscription.unsubscribe()
-  }, [])
 
   if (pathname === '/auth') return null
 
-  const handleNavClick = (e: React.MouseEvent) => {
-    if (!isLoggedIn) {
-      e.preventDefault()
-      alert('Please sign up or log in first to access this page!')
-    }
-  }
-
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-base-200">
-      <div className="flex justify-around items-center h-16">
+    <aside className="hidden md:flex fixed top-0 left-0 h-screen w-56 bg-base-100 border-r border-base-200 flex-col py-8 px-4">
+      <div className="px-3 mb-10">
+        <h1 className="text-lg font-semibold text-base-700 tracking-tight">highlights</h1>
+      </div>
+
+      <nav className="flex flex-col gap-1">
         {tabs.map(tab => {
           const isActive = pathname === tab.href
           const Icon = tab.icon
@@ -49,17 +31,18 @@ export default function BottomNav() {
             <Link
               key={tab.href}
               href={tab.href}
-              onClick={handleNavClick}
-              className={`flex flex-col items-center gap-1 text-xs transition-colors ${
-                isActive ? 'text-accent' : 'text-base-400'
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-md text-sm transition-colors ${
+                isActive
+                  ? 'bg-accent-light text-accent font-medium'
+                  : 'text-base-500 hover:bg-base-200 hover:text-base-700'
               }`}
             >
-              <Icon size={20} strokeWidth={isActive ? 2.5 : 1.5} />
-              <span>{tab.label}</span>
+              <Icon size={16} strokeWidth={isActive ? 2.5 : 1.5} />
+              {tab.label}
             </Link>
           )
         })}
-      </div>
-    </nav>
+      </nav>
+    </aside>
   )
 }
