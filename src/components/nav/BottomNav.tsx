@@ -2,6 +2,8 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import { supabase } from '@/lib/supabase'
 import { PenLine, Users, Flame, Search, User } from 'lucide-react'
 
 const tabs = [
@@ -14,7 +16,28 @@ const tabs = [
 
 export default function BottomNav() {
   const pathname = usePathname()
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setIsLoggedIn(!!session)
+    })
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setIsLoggedIn(!!session)
+    })
+
+    return () => subscription.unsubscribe()
+  }, [])
+
   if (pathname === '/auth') return null
+
+  const handleNavClick = (e: React.MouseEvent) => {
+    if (!isLoggedIn) {
+      e.preventDefault()
+      alert('Please sign up or log in first to access this page!')
+    }
+  }
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-base-200">
@@ -26,6 +49,7 @@ export default function BottomNav() {
             <Link
               key={tab.href}
               href={tab.href}
+              onClick={handleNavClick}
               className={`flex flex-col items-center gap-1 text-xs transition-colors ${
                 isActive ? 'text-accent' : 'text-base-400'
               }`}

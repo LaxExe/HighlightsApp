@@ -11,13 +11,25 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing fields' }, { status: 400 })
     }
 
+    const cleanUsername = (username || email.split('@')[0] || 'user').trim().toLowerCase()
+
+    // Ensure the username is unique
+    let finalUsername = cleanUsername
+    const existingUser = await prisma.user.findUnique({
+      where: { username: finalUsername },
+    })
+
+    if (existingUser && existingUser.id !== id) {
+      finalUsername = `${cleanUsername}_${id.substring(0, 4)}`
+    }
+
     const user = await prisma.user.upsert({
       where: { id },
       update: {},
       create: {
         id,
         email,
-        username,
+        username: finalUsername,
         streaks: {
           create: {
             name: 'Logged today',

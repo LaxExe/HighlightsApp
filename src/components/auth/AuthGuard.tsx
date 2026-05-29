@@ -16,9 +16,9 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
       const { data: { session } } = await supabase.auth.getSession()
       if (!mounted) return
 
-      // Only redirect authenticated users away from /auth to /log
+      // Only redirect authenticated users away from /auth to /
       if (session && pathname === '/auth') {
-        router.replace('/log')
+        router.replace('/')
       } else {
         setLoading(false)
       }
@@ -29,7 +29,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (!mounted) return
       if (session && pathname === '/auth') {
-        router.replace('/log')
+        router.replace('/')
       } else {
         setLoading(false)
       }

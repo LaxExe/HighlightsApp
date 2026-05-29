@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 
 export default function AuthPage() {
   const router = useRouter()
@@ -93,14 +94,16 @@ export default function AuthPage() {
   return (
     <div className="fixed inset-0 bg-base-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
       <div className="w-full max-w-md text-center font-sans flex flex-col items-center">
-        <img
-          src="/favicon.png"
-          alt="Highlights Logo"
-          className="w-12 h-12 mb-4 object-contain"
-        />
-        <h1 className="text-3xl font-semibold tracking-tight text-base-700 mb-1">
-          highlights
-        </h1>
+        <Link href="/home" className="flex flex-col items-center group">
+          <img
+            src="/favicon.png"
+            alt="Highlights Logo"
+            className="w-12 h-12 mb-4 object-contain transition-transform group-hover:scale-105"
+          />
+          <h1 className="text-3xl font-semibold tracking-tight text-base-700 mb-1 group-hover:text-base-900 transition-colors">
+            highlights
+          </h1>
+        </Link>
 
         <p className="text-base-400 text-sm mb-8">
           {isLogin ? 'Welcome back' : 'Start logging your days'}
@@ -170,6 +173,13 @@ export default function AuthPage() {
             ? "Don't have an account? Sign up"
             : 'Already have an account? Log in'}
         </p>
+
+        <Link
+          href="/home"
+          className="text-base-400 text-xs mt-6 hover:text-base-600 transition-colors cursor-pointer flex items-center gap-1"
+        >
+          ← Back to home
+        </Link>
       </div>
     </div>
   )

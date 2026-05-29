@@ -15,16 +15,18 @@ export default function HeatmapCalendar({ history, createdAt }: HeatmapCalendarP
     )
   }, [history])
 
-  const todayStr = useMemo(
-    () => new Date().toISOString().split('T')[0],
-    []
-  )
+  const todayStr = useMemo(() => {
+    const d = new Date()
+    const utc = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()))
+    return utc.toISOString().split('T')[0]
+  }, [])
 
   const days = useMemo(() => {
     return Array.from({ length: 180 }, (_, idx) => {
       const d = new Date()
-      d.setDate(d.getDate() - (179 - idx))
-      return d
+      const utc = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()))
+      utc.setUTCDate(utc.getUTCDate() - (179 - idx))
+      return utc
     })
   }, [])
 

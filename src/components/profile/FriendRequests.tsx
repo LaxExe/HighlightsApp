@@ -16,8 +16,8 @@ interface FriendRequestsProps {
 }
 
 export default function FriendRequests({
-  friends,
-  receivedRequests,
+  friends = [],
+  receivedRequests = [],
   onActionSuccess,
 }: FriendRequestsProps) {
   const [username, setUsername] = useState('')

@@ -4,6 +4,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { useEffect, useState } from 'react'
+import { supabase } from '@/lib/supabase'
 import {
   ArrowRight,
   Target,
@@ -103,7 +104,7 @@ const FEED_ENTRIES = [
 
 // ─── Nav ─────────────────────────────────────────────────────────────────────
 
-function TopNav() {
+function TopNav({ isLoggedIn, onLogout }: { isLoggedIn: boolean; onLogout: () => void }) {
   return (
     <div className="border-b border-base-200 sticky top-0 bg-base-50 z-40 backdrop-blur-sm bg-opacity-95">
       <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
@@ -118,12 +119,21 @@ function TopNav() {
           <span className="text-xl font-bold text-base-800">Highlights</span>
         </Link>
 
-        <Link
-          href="/auth"
-          className="px-4 py-2 rounded-lg bg-accent text-base-800 font-semibold transition-all hover:bg-accent-hover"
-        >
-          Sign Up
-        </Link>
+        {isLoggedIn ? (
+          <button
+            onClick={onLogout}
+            className="px-4 py-2 rounded-lg bg-red-100 hover:bg-red-200 text-red-700 font-semibold transition-all cursor-pointer text-sm"
+          >
+            Sign Out
+          </button>
+        ) : (
+          <Link
+            href="/auth"
+            className="px-4 py-2 rounded-lg bg-accent text-base-800 font-semibold transition-all hover:bg-accent-hover text-sm"
+          >
+            Sign Up
+          </Link>
+        )}
       </div>
     </div>
   )
@@ -542,9 +552,27 @@ function FinalCTA() {
 // ─── Page ────────────────────────────────────────────────────────────────────
 
 export default function HomePage() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setIsLoggedIn(!!session)
+    })
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setIsLoggedIn(!!session)
+    })
+
+    return () => subscription.unsubscribe()
+  }, [])
+
+  async function handleLogout() {
+    await supabase.auth.signOut()
+  }
+
   return (
     <div className="min-h-screen bg-base-50 text-base-700">
-      <TopNav />
+      <TopNav isLoggedIn={isLoggedIn} onLogout={handleLogout} />
       <Hero />
       <FeedCarousel />
       <HowItWorks />

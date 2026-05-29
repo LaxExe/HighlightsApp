@@ -80,6 +80,9 @@ export async function GET(req: NextRequest) {
       where: {
         toUserId: userId,
         date: today,
+        fromUserId: {
+          in: friendIds,
+        },
       },
       include: {
         fromUser: {

@@ -74,7 +74,16 @@ export async function POST(req: NextRequest) {
 
     for (const streak of user.streaks) {
       const result = streakResults.find((r) => r.streakId === streak.id)
-      const met = result?.met === true
+      let met = result?.met === true
+
+      // Force default streaks to be met
+      if (
+        streak.isDefault ||
+        streak.name.toLowerCase() === 'logged today' ||
+        streak.condition.toLowerCase().includes('submitted a day log')
+      ) {
+        met = true
+      }
 
       if (met) {
         streaksMet.push({ id: streak.id, name: streak.name })

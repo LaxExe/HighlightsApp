@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { X } from 'lucide-react'
+import { supabase } from '@/lib/supabase'
 
 interface NewStreakModalProps {
   isOpen: boolean
@@ -33,12 +34,8 @@ export default function NewStreakModal({
 
     try {
       // Get the local token
-      const sessionStr = localStorage.getItem('sb-ovdhumnqyhthbwdnkfui-auth-token')
-      let token = ''
-      if (sessionStr) {
-        const parsed = JSON.parse(sessionStr)
-        token = parsed.access_token ?? ''
-      }
+      const { data: { session } } = await supabase.auth.getSession()
+      const token = session?.access_token ?? ''
 
       const res = await fetch('/api/streaks', {
         method: 'POST',
