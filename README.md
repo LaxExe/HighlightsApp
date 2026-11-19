@@ -2,23 +2,25 @@
 
 Highlights is a full-stack social platform for logging the best parts of your day. Jot down a few unstructured highlights, and an AI pipeline scores your day, tags every entry, and updates your streaks automatically. Friends see your wins, and you build a searchable record of your life.
 
+**Website:** [lakshman-codes.github.io](https://lakshman-codes.github.io) | **Author:** [Lakshman on GitHub](https://github.com/LaxExe)
+
 ---
 
 ## Key Features
 
-- 📝 **Frictionless Daily Logging**: Write free-form highlights. No forms, no categories to pick.
-- 🤖 **AI Processing Pipeline**: One Gemini 2.5 Flash call returns a **daily score (1–10)**, **tags each highlight** from your own tag list, and **evaluates every streak condition**.
-- 🔥 **Natural-Language Streaks**: Define a streak in plain English (`"I exercised"`, `"No junk food"`). The AI decides each day whether you met it. A default **Logged today** streak is always created.
-- 🗓️ **Heatmap Calendar**: GitHub-style heatmap of every streak's history, with current and best streak counts.
-- 👥 **Friends & Feed**: Send, accept and remove friend requests, then share a day's log to a friend feed.
-- 🔍 **Search & Tag Filters**: Search past days by text and filter by tag chips.
-- 🏷️ **Custom Tag Manager**: Own your taxonomy. The AI only picks from your tags and never invents new ones.
-- 🔐 **Supabase Auth**: Auth-guarded routes via Next.js middleware.
-- 📱 **Responsive Navigation**: Bottom nav on mobile, side nav on desktop.
+- **Frictionless Daily Logging**: Write free-form highlights. No forms, no categories to pick.
+- **AI Processing Pipeline**: One Gemini 2.5 Flash call returns a **daily score (1–10)**, **tags each highlight** from your own tag list, and **evaluates every streak condition**.
+- **Natural-Language Streaks**: Define a streak in plain English (`"I exercised"`, `"No junk food"`). The AI decides each day whether you met it. A default **Logged today** streak is always created.
+- **Heatmap Calendar**: GitHub-style heatmap of every streak's history, with current and best streak counts.
+- **Friends & Feed**: Send, accept and remove friend requests, then share a day's log to a friend feed.
+- **Search & Tag Filters**: Search past days by text and filter by tag chips.
+- **Custom Tag Manager**: Own your taxonomy. The AI only picks from your tags and never invents new ones.
+- **Supabase Auth**: Auth-guarded routes via Next.js middleware.
+- **Responsive Navigation**: Bottom nav on mobile, side nav on desktop.
 
 ---
 
-## 🧠 How the AI Pipeline Works
+## How the AI Pipeline Works
 
 ```
 Highlights[] + User Tags[] + Streak Conditions[]
@@ -37,7 +39,7 @@ The model is called with a strict system instruction and `responseMimeType: appl
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 | Layer | Technology |
 |---|---|
@@ -49,7 +51,7 @@ The model is called with a strict system instruction and `responseMimeType: appl
 
 ---
 
-## 🚀 How to Build & Run
+## How to Build & Run
 
 ### Prerequisites
 - **Node.js** 20+
@@ -92,7 +94,7 @@ Lint with `npm run lint`.
 
 ---
 
-## 🗄️ Data Model
+## Data Model
 
 | Model | Purpose |
 |---|---|
@@ -103,7 +105,7 @@ Lint with `npm run lint`.
 
 ---
 
-## 🔌 API Routes
+## API Routes
 
 | Route | Description |
 |---|---|
@@ -116,7 +118,7 @@ Lint with `npm run lint`.
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
 ```
 HighlightsApp/
@@ -145,3 +147,9 @@ HighlightsApp/
         ├── prisma.ts          # Prisma client
         └── supabase.ts        # Supabase client
 ```
+
+---
+
+## About the Author
+
+Built by Lakshman, a first-year Computer Engineering student at the University of Waterloo looking to build more experience. See more of my work at [lakshman-codes.github.io](https://lakshman-codes.github.io).
