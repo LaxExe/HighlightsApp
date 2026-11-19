@@ -2,7 +2,7 @@
 
 Highlights is a full-stack social platform for logging the best parts of your day. Jot down a few unstructured highlights, and an AI pipeline scores your day, tags every entry, and updates your streaks automatically. Friends see your wins, and you build a searchable record of your life.
 
-**Website:** [lakshman-codes.github.io](https://lakshman-codes.github.io) | **Author:** [Lakshman on GitHub](https://github.com/LaxExe)
+**Live app:** [highlights-kappa.vercel.app](https://highlights-kappa.vercel.app/home) | **Website:** [lakshman-codes.github.io](https://lakshman-codes.github.io) | **Author:** [Lakshman on GitHub](https://github.com/LaxExe)
 
 ---
 
